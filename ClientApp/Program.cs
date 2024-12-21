@@ -21,14 +21,39 @@ namespace ClientApp
 
             using (WCFClient proxy = new WCFClient(binding, new EndpointAddress(new Uri(address))))
             {
-				proxy.GenerateAlarm(new Alarm(WindowsIdentity.GetCurrent().Name, "False Alarm - The Weekend"));
-				proxy.GetAllAlarms();
-				proxy.DeleteClientAlarms();
-				proxy.GetAllAlarms();
+                while (true)
+                {
+                    menu();
+                    string input = Console.ReadLine();
 
+                    switch (input)
+                    {
+                        case "1":
+                            Console.WriteLine("Enter alarm name:");
+                            string alarmName = Console.ReadLine();
+                            proxy.GenerateAlarm(new Alarm(WindowsIdentity.GetCurrent().Name, alarmName));
+                            break;
+                        case "2":
+                            proxy.GetAllAlarms();
+                            break;
+                        case "3":
+                            proxy.DeleteClientAlarms();
+                            break;
+                        case "q":
+                            Console.WriteLine("Exiting application...");
+                            return;
+                        default:
+                            Console.WriteLine("Not valid input.");
+                            break;
+                    }
+                }
             }
+		}
 
-			Console.ReadLine();
+		private static void menu()
+		{
+			string result = "Menu:\n1 - Generate Alarm\n2 - Get Alarm\n3 - Delete Alarms\nq - Exit app";
+			Console.WriteLine(result);
 		}
 	}
 }
