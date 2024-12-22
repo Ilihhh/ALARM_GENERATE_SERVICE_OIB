@@ -13,8 +13,7 @@ namespace SecServiceApp
         static void Main(string[] args)
         {
             // Ime sertifikata za primarni i sekundarni server (Common Name - CN)
-            string primaryCertCN = "primaryservercert";
-            string secondaryCertCN = "secservercert";
+            string secondaryCertCN = "secondaryservercert";
 
             // Učitavanje sertifikata iz Windows Certificate Store-a
             X509Certificate2 secondaryCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, secondaryCertCN);
@@ -38,8 +37,6 @@ namespace SecServiceApp
 
             // Postavljanje validacije sertifikata na ChainTrust
             host.Credentials.ClientCertificate.Authentication.CertificateValidationMode = X509CertificateValidationMode.ChainTrust;
-            //host.Credentials.ClientCertificate.Authentication.CertificateValidationMode = X509CertificateValidationMode.Custom;
-            //host.Credentials.ClientCertificate.Authentication.CustomCertificateValidator = new Custom();
 
             // Onemogućavanje provere opoziva sertifikata (CRL)
             host.Credentials.ClientCertificate.Authentication.RevocationMode = X509RevocationMode.NoCheck;

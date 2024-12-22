@@ -42,8 +42,6 @@ namespace ServiceApp
 	}
 }
 */
-
-
 using System;
 using System.Collections.Generic;
 using System.ServiceModel;
@@ -63,7 +61,7 @@ namespace ServiceApp
         {
             // Sertifikati za primarni i sekundarni server
             string primaryCertCN = "primaryservercert";
-            string secondaryCertCN = "secservercert";
+            string secondaryCertCN = "secondaryservercert";
 
             // Učitavanje sertifikata iz Windows Certificate Store-a
             X509Certificate2 primaryCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, primaryCertCN);
@@ -81,6 +79,33 @@ namespace ServiceApp
                 return;
             }
 
+            // Kreiranje ChannelFactory za komunikaciju sa sekundarnim serverom
+            ChannelFactory<IWCFContract> factory = new ChannelFactory<IWCFContract>(
+                new NetTcpBinding(SecurityMode.Transport)
+                {
+                    Security =
+                    {
+                        Transport = { ClientCredentialType = TcpClientCredentialType.Certificate }
+                    }
+                },
+                new EndpointAddress(new Uri("net.tcp://localhost:8888/SecondaryService"),
+                                    new X509CertificateEndpointIdentity(secondaryCert))
+            );
+
+            // Postavljanje klijentskog sertifikata
+            factory.Credentials.ClientCertificate.SetCertificate(
+                StoreLocation.LocalMachine,
+                StoreName.My,
+                X509FindType.FindBySubjectName,
+                primaryCertCN
+            );
+
+            // Postavljanje validacije sertifikata
+            factory.Credentials.ServiceCertificate.Authentication.CertificateValidationMode = X509CertificateValidationMode.ChainTrust;
+            factory.Credentials.ServiceCertificate.Authentication.RevocationMode = X509RevocationMode.NoCheck;
+
+            IWCFContract secondaryService = factory.CreateChannel();
+
             // Kreiranje NetTcpBinding za komunikaciju sa klijentima
             NetTcpBinding binding = new NetTcpBinding
             {
@@ -97,8 +122,8 @@ namespace ServiceApp
 
             string address = "net.tcp://localhost:9999/WCFService";
 
-            // Kreiranje ServiceHost instance
-            ServiceHost host = new ServiceHost(typeof(WCFService));
+            // Kreiranje ServiceHost instance sa prosleđenim sekundarnim servisom
+            ServiceHost host = new ServiceHost(new WCFService(secondaryService));
             host.AddServiceEndpoint(typeof(IWCFService), binding, address);
 
             // Podesavanje custom autorizacije
@@ -110,44 +135,11 @@ namespace ServiceApp
             };
             host.Authorization.ExternalAuthorizationPolicies = policies.AsReadOnly();
 
-            // Kreiranje ChannelFactory za komunikaciju sa sekundarnim serverom
-            ChannelFactory<IWCFContract> factory = new ChannelFactory<IWCFContract>(
-                new NetTcpBinding(SecurityMode.Transport)
-                {
-                    Security =
-                    {
-                        Transport = { ClientCredentialType = TcpClientCredentialType.Certificate }
-                    }
-                },
-                new EndpointAddress(new Uri("net.tcp://localhost:8888/SecondaryService"),
-                                    new X509CertificateEndpointIdentity(secondaryCert))
-            );
-
-            // Postavljanje klijentskog sertifikata za komunikaciju sa sekundarnim serverom
-            factory.Credentials.ClientCertificate.SetCertificate(
-                StoreLocation.LocalMachine,
-                StoreName.My,
-                X509FindType.FindBySubjectName,
-                primaryCertCN
-            );
-
-            // Postavljanje validacije sertifikata za sekundarni server
-            factory.Credentials.ServiceCertificate.Authentication.CertificateValidationMode = X509CertificateValidationMode.ChainTrust;
-            factory.Credentials.ServiceCertificate.Authentication.RevocationMode = X509RevocationMode.NoCheck;
-
-            IWCFContract secondaryService = factory.CreateChannel();
-
             try
             {
                 // Pokretanje hosta za klijente
                 host.Open();
                 Console.WriteLine("Primary WCFService is opened. Press <enter> to finish...");
-
-                // Primer: Slanje alarma sekundarnom serveru
-                var alarm = new Alarm("Client1", "Test Alarm");
-                secondaryService.ReplicateAlarm(alarm);
-                Console.WriteLine("Alarm sent to secondary server.");
-
                 Console.ReadLine();
             }
             catch (Exception e)
@@ -157,7 +149,7 @@ namespace ServiceApp
             }
             finally
             {
-                // Zatvaranje hosta i komunikacije sa sekundarnim serverom
+                // Zatvaranje hosta
                 if (host.State == CommunicationState.Opened)
                     host.Close();
 
