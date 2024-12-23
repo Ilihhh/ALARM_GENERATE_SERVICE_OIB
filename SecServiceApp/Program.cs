@@ -12,10 +12,10 @@ namespace SecServiceApp
     {
         static void Main(string[] args)
         {
-            // Ime sertifikata za primarni i sekundarni server (Common Name - CN)
+            // Common Name (CN) of the secondary server certificate
             string secondaryCertCN = "secondaryservercert";
 
-            // Učitavanje sertifikata iz Windows Certificate Store-a
+            // Load the secondary server certificate from the Windows Certificate Store
             X509Certificate2 secondaryCert = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, secondaryCertCN);
 
             if (secondaryCert == null)
@@ -24,31 +24,36 @@ namespace SecServiceApp
                 return;
             }
 
-            // Kreiranje NetTcpBinding sa sigurnosnim postavkama
-            NetTcpBinding binding = new NetTcpBinding();
-            binding.Security.Mode = SecurityMode.Transport;
-            binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Certificate;
+            // Create NetTcpBinding with security settings
+            NetTcpBinding binding = new NetTcpBinding
+            {
+                Security =
+                {
+                    Mode = SecurityMode.Transport,
+                    Transport = { ClientCredentialType = TcpClientCredentialType.Certificate }
+                }
+            };
 
             string address = "net.tcp://localhost:8888/SecondaryService";
 
-            // Kreiranje ServiceHost instance
+            // Create ServiceHost instance
             ServiceHost host = new ServiceHost(typeof(WCFService));
             host.AddServiceEndpoint(typeof(IWCFContract), binding, address);
 
-            // Postavljanje validacije sertifikata na ChainTrust
+            // Set certificate validation mode to ChainTrust
             host.Credentials.ClientCertificate.Authentication.CertificateValidationMode = X509CertificateValidationMode.ChainTrust;
 
-            // Onemogućavanje provere opoziva sertifikata (CRL)
+            // Disable certificate revocation check (CRL)
             host.Credentials.ClientCertificate.Authentication.RevocationMode = X509RevocationMode.NoCheck;
 
-            // Postavljanje sertifikata za sekundarni server
+            // Assign the secondary server certificate
             host.Credentials.ServiceCertificate.Certificate = secondaryCert;
 
             try
             {
-                // Pokretanje servisa
+                // Start the service
                 host.Open();
-                Console.WriteLine("Secondary WCFService is started.\nPress <enter> to stop ...");
+                Console.WriteLine("Secondary WCFService is started.\nPress <Enter> to stop...");
                 Console.ReadLine();
             }
             catch (Exception e)
