@@ -22,6 +22,14 @@ namespace Contracts
             this.Risk = CalculateRisk();
         }
 
+        public Alarm(string clientName, string message, double risk)
+        {
+            this.TimeGenerated = DateTime.Now;
+            this.ClientName = clientName;
+            this.Message = message;
+            this.Risk = risk;
+        }
+
         [DataMember]
         public DateTime TimeGenerated { get => timeGenerated; private set => timeGenerated = value; }
 

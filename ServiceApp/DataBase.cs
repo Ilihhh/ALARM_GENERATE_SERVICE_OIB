@@ -66,15 +66,32 @@ namespace ServiceApp
             {
                 if (File.Exists(FilePath))
                 {
+                    alarms.Clear(); // Clear existing alarms to avoid duplication
+
                     using (StreamReader reader = new StreamReader(FilePath))
                     {
                         string line;
                         while ((line = reader.ReadLine()) != null)
                         {
-                            var parts = line.Split('|');
-                            if (parts.Length == 2)
+                            // Parse the line using the expected format
+                            var parts = line.Split(new[] { " - Client: ", ", Message: ", ", Risk: " }, StringSplitOptions.None);
+
+                            if (parts.Length == 4) // Ensure the format matches
                             {
-                                alarms.Add(new Alarm(parts[0], parts[1]));
+                                string clientName = parts[1];
+                                string message = parts[2];
+                                if (double.TryParse(parts[3], out double risk))
+                                {
+                                    alarms.Add(new Alarm(clientName, message, risk));
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"[WARNING] Invalid risk value in line: {line}");
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine($"[WARNING] Line does not match expected format: {line}");
                             }
                         }
                     }
