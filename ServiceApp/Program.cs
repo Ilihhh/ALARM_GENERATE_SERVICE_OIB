@@ -41,7 +41,7 @@ namespace ServiceApp
 		}
 	}
 }
-*/
+*/// Program.cs - Primarni server
 using System;
 using System.Collections.Generic;
 using System.ServiceModel;
@@ -135,6 +135,10 @@ namespace ServiceApp
             };
             host.Authorization.ExternalAuthorizationPolicies = policies.AsReadOnly();
 
+            // Kreiranje i pokretanje replikatora
+            Replikator replikator = new Replikator(secondaryService);
+            replikator.Start();
+
             try
             {
                 // Pokretanje hosta za klijente
@@ -149,7 +153,9 @@ namespace ServiceApp
             }
             finally
             {
-                // Zatvaranje hosta
+                // Zatvaranje hosta i replikatora
+                replikator.Stop();
+
                 if (host.State == CommunicationState.Opened)
                     host.Close();
 

@@ -56,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Alarm.cs" />
+    <Compile Include="IReplikator.cs" />
     <Compile Include="IWCFContract.cs" />
     <Compile Include="IWCFService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

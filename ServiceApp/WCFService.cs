@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Permissions;
 using System.Security.Principal;
@@ -20,7 +21,7 @@ namespace ServiceApp
         {
             _secondaryService = secondaryService ?? throw new ArgumentNullException(nameof(secondaryService), "Secondary service cannot be null.");
         }
-
+        
         [PrincipalPermission(SecurityAction.Demand, Role = "Generate")]
         public void GenerateAlarm(Alarm alarm)
         {
@@ -34,16 +35,18 @@ namespace ServiceApp
 
             Database.SaveAlarms(); // Save to file
 
+            // Dodavanje alarma u buffer za replikaciju
             try
             {
-                _secondaryService.ReplicateAlarm(alarm);
-                Console.WriteLine("Alarm successfully replicated");
+                File.AppendAllText("replication_buffer.txt", $"{alarm.ClientName},{alarm.Message},{alarm.Risk}{Environment.NewLine}");
+                Console.WriteLine("Alarm added to replication buffer.");
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine("[ERROR] Failed to replicate alarm: " + e.Message);
+                Console.WriteLine($"[ERROR] Failed to add alarm to buffer: {ex.Message}");
             }
         }
+
 
         [PrincipalPermission(SecurityAction.Demand, Role = "Read")]
         public List<Alarm> GetAllAlarms()
