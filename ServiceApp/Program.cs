@@ -7,6 +7,7 @@ using System.ServiceModel.Description;
 using Contracts;
 using System.IdentityModel.Policy;
 using SecurityManager;
+using System.Threading;
 
 namespace ServiceApp
 {
@@ -16,7 +17,7 @@ namespace ServiceApp
 		{
 			NetTcpBinding binding = new NetTcpBinding();
 			string address = "net.tcp://localhost:9999/WCFService";
-
+            Database db = new Database();
             binding.Security.Mode = SecurityMode.Transport;                                                     //windows autentifikacija
             binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
             binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
@@ -35,9 +36,14 @@ namespace ServiceApp
 
             host.Open();
 			Console.WriteLine("WCFService is opened. Press <enter> to finish...");
-			Console.ReadLine();
 
-			host.Close();
+            Replicator replicator = new Replicator();
+            Thread replicatorThread = new Thread(() => replicator.Run());
+            replicatorThread.IsBackground = true;
+            replicatorThread.Start();
+
+            Console.ReadLine();
+            host.Close();
 		}
 	}
 }

@@ -22,6 +22,14 @@ namespace Contracts
             this.Risk = CalculateRisk();
         }
 
+        public Alarm(DateTime timeGenerated, string clientName, string message, double risk)
+        {
+            this.TimeGenerated = timeGenerated;
+            this.ClientName = clientName;
+            this.Message = message;
+            this.Risk = risk;
+        }
+
         [DataMember]
         public DateTime TimeGenerated { get => timeGenerated; private set => timeGenerated = value; }
 
@@ -37,7 +45,6 @@ namespace Contracts
         private double CalculateRisk()
         {
             // Dummy implementation for risk calculation
-            // You can replace this with a more complex calculation logic
             Random random = new Random();
             return random.NextDouble() * 100; // Risk value between 0 and 100
         }

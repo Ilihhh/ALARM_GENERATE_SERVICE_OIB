@@ -11,8 +11,11 @@ using SecurityManager;
 
 namespace ServiceApp
 {
+    public delegate void DatabaseChangedEventHandler();
+
     public class WCFService : IWCFService
     {
+        public static event DatabaseChangedEventHandler DatabaseChanged;
 
         [PrincipalPermission(SecurityAction.Demand, Role = "Generate")]
         public void GenerateAlarm(Alarm alarm)
@@ -22,8 +25,10 @@ namespace ServiceApp
                 throw new ArgumentNullException(nameof(alarm), "Alarm cannot be null.");
             }
 
-            Database.alarms.Add(alarm);
+            Database.AddAlarm(alarm);
             Console.WriteLine($"New alarm generated: {alarm}");
+
+            DatabaseChanged?.Invoke();
         }
 
         [PrincipalPermission(SecurityAction.Demand, Role = "Read")]
@@ -35,7 +40,8 @@ namespace ServiceApp
         [PrincipalPermission(SecurityAction.Demand, Role = "AlarmAdmin")]
         public void DeleteAllAlarms()
         {
-            Database.alarms.Clear();
+            Database.ClearAlarms();
+            DatabaseChanged?.Invoke();
             Console.WriteLine("All alarms have been deleted.");
         }
 
@@ -44,28 +50,25 @@ namespace ServiceApp
         {
             IIdentity identity = Thread.CurrentPrincipal.Identity;
 
-            //Console.WriteLine("Tip autentifikacije : " + identity.AuthenticationType);
-
             WindowsIdentity windowsIdentity = identity as WindowsIdentity;
-
-            //Console.WriteLine("Ime klijenta koji je pozvao metodu : " + windowsIdentity.Name);
 
             string clientName = windowsIdentity.Name;
 
-            Console.WriteLine("Ime klijenta koji je pozvao metodu : " + clientName);
-
             var alarmsToDelete = Database.alarms.Where(a => a.ClientName == clientName).ToList();
 
-            // Brisanje tih alarma
-            foreach (var alarm in alarmsToDelete)
-            {
-                Database.alarms.Remove(alarm);
-                Console.WriteLine($"Alarm za klijenta {clientName} je obrisan: {alarm}");
-            }
 
             if (alarmsToDelete.Count == 0)
             {
                 Console.WriteLine($"Nema alarma za klijenta {clientName}.");
+            } 
+            else
+            {
+                foreach (var alarm in alarmsToDelete)
+                {
+                    Database.RemoveAlarm(alarm);
+                    Console.WriteLine($"Alarm za klijenta {clientName} je obrisan: {alarm}");
+                }
+                DatabaseChanged?.Invoke();
             }
         }
 
