@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Security.Principal;
 using System.ServiceModel;
+using System.Threading;
 using System.Timers;
 using Contracts;
+using SecurityManager;
 
 namespace SecondaryServiceApp
 {
@@ -26,7 +29,6 @@ namespace SecondaryServiceApp
         private readonly EndpointAddress replicatorAddress;
         private DuplexChannelFactory<IReplicator> duplexFactory;
         private IReplicator replicatorProxy;
-        private readonly Timer retryTimer;
         private bool disposed = false;
 
         public ReplicatorClientHandler()
@@ -53,6 +55,8 @@ namespace SecondaryServiceApp
         {
             try
             {
+                Audit.LogReplicationInitiated();
+
                 var alarms = replicatorProxy.GetAllAlarms();
                 if (alarms != null)
                 {
@@ -109,8 +113,6 @@ namespace SecondaryServiceApp
             {
                 if (disposing)
                 {
-                    retryTimer?.Stop();
-                    retryTimer?.Dispose();
 
                     Unsubscribe();
                     DisposeClient(secondaryServiceClient);

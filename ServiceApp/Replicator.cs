@@ -1,8 +1,11 @@
 ﻿using Contracts;
+using SecurityManager;
 using ServiceApp;
 using System;
 using System.Collections.Generic;
+using System.Security.Principal;
 using System.ServiceModel;
+using System.Threading;
 
 [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Reentrant)]
 public class Replicator : IReplicator
@@ -34,6 +37,8 @@ public class Replicator : IReplicator
     {
         try
         {
+            Audit.LogReplicationReceived();
+
             return Database.alarms;
         }
         catch (Exception ex)

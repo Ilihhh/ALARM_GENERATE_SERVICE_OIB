@@ -22,14 +22,14 @@ namespace SecurityManager {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class RolesConfigFile {
+    internal class AuditEventFile {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal RolesConfigFile() {
+        internal AuditEventFile() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace SecurityManager {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SecurityManager.RolesConfigFile", typeof(RolesConfigFile).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SecurityManager.AuditEventFile", typeof(AuditEventFile).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,29 +61,20 @@ namespace SecurityManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Read,Generate,Administrate,AlarmAdmin.
+        ///   Looks up a localized string similar to Replication initiated. User: {0}.
         /// </summary>
-        internal static string Admin {
+        internal static string LogReplicationInitiated {
             get {
-                return ResourceManager.GetString("Admin", resourceCulture);
+                return ResourceManager.GetString("LogReplicationInitiated", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Read,Generate.
+        ///   Looks up a localized string similar to Replication received. User {0}.
         /// </summary>
-        internal static string AlarmGenerator {
+        internal static string LogReplicationReceived {
             get {
-                return ResourceManager.GetString("AlarmGenerator", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Read.
-        /// </summary>
-        internal static string Reader {
-            get {
-                return ResourceManager.GetString("Reader", resourceCulture);
+                return ResourceManager.GetString("LogReplicationReceived", resourceCulture);
             }
         }
     }
