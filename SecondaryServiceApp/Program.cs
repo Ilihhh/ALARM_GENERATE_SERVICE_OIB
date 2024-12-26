@@ -31,7 +31,7 @@ namespace SecondaryServiceApp
                 StoreLocation.LocalMachine,
                 StoreName.My,
                 X509FindType.FindBySubjectName,
-                "wcfsecondaryservice"); // Sertifikat za sekundarni server
+                "secondaryserver"); // Sertifikat za sekundarni server
 
             // Podesavanje ChainTrust validacije
             host.Credentials.ClientCertificate.Authentication.CertificateValidationMode = X509CertificateValidationMode.ChainTrust;

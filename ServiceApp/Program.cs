@@ -46,7 +46,7 @@ namespace ServiceApp
                 StoreLocation.LocalMachine,
                 StoreName.My,
                 X509FindType.FindBySubjectName,
-                "wcfservice"); // Sertifikat za primarni server
+                "primaryserver"); // Sertifikat za primarni server
 
             // Podesavanje ChainTrust validacije
             host.Credentials.ClientCertificate.Authentication.CertificateValidationMode = X509CertificateValidationMode.ChainTrust;
